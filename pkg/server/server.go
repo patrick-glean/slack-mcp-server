@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+
 	"github.com/korotovsky/slack-mcp-server/pkg/handler"
 	"github.com/korotovsky/slack-mcp-server/pkg/provider"
 	"github.com/mark3labs/mcp-go/mcp"
@@ -67,4 +68,8 @@ func (s *MCPServer) ServeSSE(addr string) *server.SSEServer {
 
 func (s *MCPServer) ServeStdio() error {
 	return server.ServeStdio(s.server)
+}
+
+func (s *MCPServer) Server() *server.MCPServer {
+	return s.server
 }

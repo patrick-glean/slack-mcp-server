@@ -2,13 +2,13 @@ package handler
 
 import (
 	"context"
-	"fmt"
+	"log"
+	"sort"
+
 	"github.com/gocarina/gocsv"
 	"github.com/korotovsky/slack-mcp-server/pkg/provider"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/slack-go/slack"
-	"log"
-	"sort"
 )
 
 var AllChanTypes = []string{"mpim", "im", "public_channel", "private_channel"}
@@ -33,32 +33,12 @@ func NewChannelsHandler(apiProvider *provider.ApiProvider) *ChannelsHandler {
 }
 
 func (ch *ChannelsHandler) ChannelsHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	sortType := request.Params.Arguments["sort"]
-	if sortType == "" || sortType == nil {
-		sortType = "popularity"
-	}
-
-	types, ok := request.Params.Arguments["channel_types"].([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("channel_types should be an array")
-	}
-	channelTypes := []string{}
-	for i, v := range types {
-		s, ok := v.(string)
-		if !ok || s == "" {
-			fmt.Printf("element at index %d is not a string\n", i)
-			continue
-		}
-		channelTypes = append(channelTypes, s)
-	}
+	sortType := request.GetString("sort", "popularity")
+	channelTypes := request.GetStringSlice("channel_types", PubChanType)
 
 	api, err := ch.apiProvider.Provide()
 	if err != nil {
 		return nil, err
-	}
-
-	if len(types) == 0 {
-		channelTypes = PubChanType
 	}
 
 	var channels []slack.Channel
